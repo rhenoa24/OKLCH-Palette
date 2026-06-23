@@ -58,7 +58,6 @@ export class AppStateService {
   /** Right-click / Alt+click a palette cell → set as new base and regenerate */
   setBaseFromCell(oklch: OklchColor): void {
     if (this.locked()) return;
-    this.historyService.push(this.baseColor());
     this.baseColor.set(oklch);
     this.selectedColor.set(oklch);
     this.hueShift.set(0);
