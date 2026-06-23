@@ -212,7 +212,7 @@ export class ColorWheelComponent implements AfterViewInit, OnDestroy {
     this.state.selectColor(oklch);
   }
 
-  private pickHsv(x: number, y: number): import('../../shared/models/color.model').OklchColor {
+  private pickHsv(x: number, y: number): import('../../shared/models/color').OklchColor {
     const cx = this.SIZE / 2;
     const cy = this.SIZE / 2;
     const radius = this.SIZE / 2 - 4;
@@ -226,7 +226,7 @@ export class ColorWheelComponent implements AfterViewInit, OnDestroy {
     return this.colorService.rgbToOklch({ r, g, b });
   }
 
-  private pickOklchCircular(x: number, y: number): import('../../shared/models/color.model').OklchColor {
+  private pickOklchCircular(x: number, y: number): import('../../shared/models/color').OklchColor {
     const cx = this.SIZE / 2;
     const cy = this.SIZE / 2;
     const radius = this.SIZE / 2 - 4;
@@ -238,7 +238,7 @@ export class ColorWheelComponent implements AfterViewInit, OnDestroy {
     return this.colorService.clampToGamut({ l: this.lightness(), c: chroma, h: hue });
   }
 
-  private pickOklchSquare(x: number, y: number): import('../../shared/models/color.model').OklchColor {
+  private pickOklchSquare(x: number, y: number): import('../../shared/models/color').OklchColor {
     const hue = (x / this.SIZE) * 360;
     const chroma = (1 - y / this.SIZE) * 0.32;
     return this.colorService.clampToGamut({ l: this.lightness(), c: chroma, h: hue });
