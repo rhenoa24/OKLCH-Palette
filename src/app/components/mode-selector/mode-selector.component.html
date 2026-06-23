@@ -1,6 +1,6 @@
-<!--<div class="mode-selector">-->
-  <!-- Palette mode tabs -->
-  <!--@for (tab of paletteModes; track tab.id) {
+<div class="mode-selector">
+   <!--Palette mode tabs--> 
+  @for (tab of paletteModes; track tab.id) {
   <button class="mode-btn"
           [class.active]="!showWheel() && activeMode() === tab.id"
           (click)="selectMode(tab.id)"
@@ -9,18 +9,18 @@
                tab.id === 'T' ? 'Temperature — cool to warm' : 'Brightness + Temperature'">
     {{ tab.label }}
   </button>
-  }-->
+  }
 
-  <!-- Wheel toggle buttons -->
-  <!--@for (wheel of wheelModes; track wheel.id) {
+   <!--Wheel toggle buttons--> 
+  @for (wheel of wheelModes; track wheel.id) {
   <button class="mode-btn mode-btn--wheel"
           [class.active]="activeWheel() === wheel.id"
           (click)="toggleWheel(wheel.id)"
           [title]="wheel.id === 'hsv' ? 'HSV Triangle Wheel' : 'OKLCH Circular Wheel'">
     {{ wheel.label }}
   </button>
-  }-->
+  }
 
-  <!-- Eyedropper -->
-  <!--<button class="mode-btn mode-btn--tool" title="Screen eyedropper">📷</button>
-</div>-->
+   <!--Eyedropper--> 
+  <button class="mode-btn mode-btn--tool" title="Screen eyedropper">📷</button>
+</div>
