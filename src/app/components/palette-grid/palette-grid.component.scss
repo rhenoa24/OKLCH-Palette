@@ -17,6 +17,7 @@
   cursor: pointer;
   position: relative;
   flex-shrink: 0;
+  flex-grow: 1;
 
   &:hover {
     outline: 2px solid rgba(255, 255, 255, 0.6);

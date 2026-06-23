@@ -22,10 +22,10 @@ interface WheelTab {
 })
 export class ModeSelectorComponent {
   readonly paletteModes: ModeTab[] = [
-    { id: 'M', label: 'M' },
-    { id: 'T', label: 'T' },
-    { id: 'V', label: 'V' },
-    { id: 'B', label: 'B' },
+    { id: 'M', label: 'Match' },
+    { id: 'T', label: 'Temp' },
+    { id: 'V', label: 'Vivid' },
+    { id: 'B', label: 'Bright + Temp' },
   ];
 
   readonly wheelModes: WheelTab[] = [

@@ -4,7 +4,7 @@
   <button class="mode-btn"
           [class.active]="!showWheel() && activeMode() === tab.id"
           (click)="selectMode(tab.id)"
-          [title]="tab.id === 'M' ? 'Match — perceptual lightness' :
+          [title]="tab.id === 'M' ? ' — perceptual lightness' :
                tab.id === 'V' ? 'Vivid — boosted chroma' :
                tab.id === 'T' ? 'Temperature — cool to warm' : 'Brightness + Temperature'">
     {{ tab.label }}
