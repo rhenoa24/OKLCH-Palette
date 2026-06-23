@@ -38,6 +38,8 @@
           },
           "configurations": {
             "production": {
+              "outputPath": "dist/oklch-palette",
+              "baseHref": "/OKLCH-Palette",
               "budgets": [
                 {
                   "type": "initial",
