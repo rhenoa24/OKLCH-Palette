@@ -12,15 +12,15 @@
   }
 
    <!--Wheel toggle buttons--> 
-  @for (wheel of wheelModes; track wheel.id) {
+  <!--@for (wheel of wheelModes; track wheel.id) {
   <button class="mode-btn mode-btn--wheel"
           [class.active]="activeWheel() === wheel.id"
           (click)="toggleWheel(wheel.id)"
           [title]="wheel.id === 'hsv' ? 'HSV Triangle Wheel' : 'OKLCH Circular Wheel'">
     {{ wheel.label }}
   </button>
-  }
+  }-->
 
    <!--Eyedropper--> 
-  <button class="mode-btn mode-btn--tool" title="Screen eyedropper">📷</button>
+  <!--<button class="mode-btn mode-btn--tool" title="Screen eyedropper">📷</button>-->
 </div>

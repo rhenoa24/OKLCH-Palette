@@ -16,7 +16,7 @@ export class HistoryRowComponent {
   readonly slots = computed(() => {
     const h = this.history();
     // Always show 9 slots; empty ones are null
-    return Array.from({ length: 9 }, (_, i) => h[i] ?? null);
+    return Array.from({ length: 27 }, (_, i) => h[i] ?? null);
   });
 
   constructor(

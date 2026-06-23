@@ -23,7 +23,6 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px;
-  background: var(--color-surface-1);
   color: var(--color-text);
   font-family: var(--font-ui);
   font-size: 13px;
@@ -31,10 +30,10 @@
   /*width: calc(320px * var(--ui-scale, 1));*/
   width: 100%;
   height: 100%;
-  transform-origin: top center;
+  /*transform-origin: top center;*/
   // Subtle window border
-  border: 1px solid var(--color-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /*border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);*/
 }
 
 // ── Toolbar ─────────────────────────────────────────────────
@@ -63,6 +62,7 @@
 .app-main {
   display: flex;
   gap: 4px;
+  flex: 1;
 }
 
 .grid-area {

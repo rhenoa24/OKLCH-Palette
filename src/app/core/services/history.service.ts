@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { OklchColor } from '../../shared/models/color';
 import { ColorService } from './color.service';
 
-const MAX_HISTORY = 9;
+const MAX_HISTORY = 27;
 
 @Injectable({ providedIn: 'root' })
 export class HistoryService {
