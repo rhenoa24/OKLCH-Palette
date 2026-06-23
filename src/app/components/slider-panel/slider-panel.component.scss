@@ -1,0 +1,62 @@
+.slider-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+.slider {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: var(--color-surface-3);
+  border-radius: 2px;
+  cursor: pointer;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-text);
+    border: 2px solid var(--color-surface-1);
+    cursor: pointer;
+  }
+
+  &--hue {
+    background: linear-gradient( to right, oklch(0.7 0.18 0), oklch(0.7 0.18 60), oklch(0.7 0.18 120), oklch(0.7 0.18 180), oklch(0.7 0.18 240), oklch(0.7 0.18 300), oklch(0.7 0.18 360) );
+  }
+
+  &--lightness {
+    background: linear-gradient(to right, #000, #fff);
+  }
+
+  &--chroma {
+    background: linear-gradient(to right, #888, oklch(0.7 0.35 290));
+  }
+}
+
+.slider-value {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}

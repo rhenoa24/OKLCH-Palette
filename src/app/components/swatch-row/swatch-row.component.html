@@ -1,1 +1,16 @@
-<p>swatch-row works!</p>
+<div class="swatch-row">
+  <!-- Left swatch: base color + lock indicator -->
+  <div class="swatch swatch--base"
+       [class.locked]="locked()"
+       [style.background-color]="'#' + baseHex()"
+       [title]="locked() ? 'Locked — double-click to unlock' : 'Double-click to lock'"
+       (dblclick)="onBaseDblClick()">
+    <span class="lock-icon">{{ locked() ? '🔒' : '○' }}</span>
+  </div>
+
+  <!-- Right swatch: selected color -->
+  <div class="swatch swatch--selected"
+       [style.background-color]="'#' + selectedHex()"
+       title="Click to set as base color"
+       (click)="onSelectedClick()"></div>
+</div>

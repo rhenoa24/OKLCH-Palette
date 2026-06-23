@@ -1,1 +1,16 @@
-<p>palette-grid works!</p>
+<div class="palette-grid">
+  @for (row of palette(); track $index) {
+  <div class="palette-row">
+    @for (cell of row; track $index) {
+    <div class="palette-cell"
+         [class.center]="isCenter($index / 9 | 0, $index % 9)"
+         [class.out-of-gamut]="cell.outOfGamut && state.showOutOfGamut()"
+         [style.background-color]="'#' + cell.hex"
+         [title]="'#' + cell.hex"
+         (click)="onLeftClick(cell)"
+         (contextmenu)="onRightClick($event, cell)"
+         (mousedown)="onAltClick($event, cell)"></div>
+    }
+  </div>
+  }
+</div>

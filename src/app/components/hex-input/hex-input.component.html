@@ -1,1 +1,15 @@
-<p>hex-input works!</p>
+<div class="hex-input-row">
+  <span class="hex-icon" title="Eyedropper (EyeDropper API — Chrome/Edge only)">🔍</span>
+  <input #hexField
+         class="hex-input"
+         type="text"
+         [value]="selectedHex()"
+         maxlength="6"
+         spellcheck="false"
+         autocomplete="off"
+         (keydown)="onKeydown($event)"
+         (input)="onInput($event)"
+         (focus)="onFocus()" />
+  <!-- Lightness/contrast toggle icon (right side, matches screenshot) -->
+  <button class="contrast-btn" title="Toggle contrast preview" tabindex="-1">◑</button>
+</div>

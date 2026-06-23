@@ -1,1 +1,37 @@
-<p>slider-panel works!</p>
+<div class="slider-panel">
+  <div class="slider-row">
+    <label class="slider-label">Hue</label>
+    <input class="slider slider--hue"
+           type="range"
+           min="-180"
+           max="180"
+           step="1"
+           [value]="hueShift()"
+           (input)="onHueChange($event)" />
+    <span class="slider-value">{{ hueShift() > 0 ? '+' : '' }}{{ hueShift() }}°</span>
+  </div>
+
+  <div class="slider-row">
+    <label class="slider-label">L</label>
+    <input class="slider slider--lightness"
+           type="range"
+           min="0.02"
+           max="0.98"
+           step="0.01"
+           [value]="lightness()"
+           (input)="onLightnessChange($event)" />
+    <span class="slider-value">{{ (lightness() * 100).toFixed(0) }}</span>
+  </div>
+
+  <div class="slider-row">
+    <label class="slider-label">C</label>
+    <input class="slider slider--chroma"
+           type="range"
+           min="0"
+           max="0.4"
+           step="0.005"
+           [value]="chroma()"
+           (input)="onChromaChange($event)" />
+    <span class="slider-value">{{ chroma().toFixed(3) }}</span>
+  </div>
+</div>

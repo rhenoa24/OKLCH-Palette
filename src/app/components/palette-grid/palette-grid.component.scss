@@ -1,0 +1,36 @@
+.palette-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+}
+
+.palette-row {
+  display: flex;
+  gap: 1px;
+}
+
+.palette-cell {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+
+  &:hover {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  &.center {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+    outline-offset: -2px;
+    z-index: 1;
+  }
+
+  &.out-of-gamut {
+    background-color: #888 !important;
+  }
+}

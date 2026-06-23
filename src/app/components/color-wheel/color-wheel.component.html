@@ -1,1 +1,23 @@
-<p>color-wheel works!</p>
+<div class="color-wheel-wrapper">
+  <canvas #wheelCanvas
+          class="wheel-canvas"
+          (click)="onCanvasClick($event)"
+          (mousedown)="onMouseDown($event)"
+          (mousemove)="onMouseMove($event)"
+          (mouseup)="onMouseUp()"
+          (mouseleave)="onMouseUp()"></canvas>
+
+  <!-- Lightness slider for OKLCH wheels -->
+  @if (wheelMode() === 'oklch-circular' || wheelMode() === 'oklch-square') {
+  <div class="lightness-strip">
+    <input class="lightness-slider"
+           type="range"
+           min="0.02"
+           max="0.98"
+           step="0.01"
+           orient="vertical"
+           [value]="lightness()"
+           (input)="onLightnessChange($event)" />
+  </div>
+  }
+</div>

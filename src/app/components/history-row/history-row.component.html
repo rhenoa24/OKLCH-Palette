@@ -1,1 +1,14 @@
-<p>history-row works!</p>
+<div class="history-row">
+  <div class="history-swatches">
+    @for (slot of slots(); track $index) {
+    <div class="history-cell"
+         [class.empty]="!getHex($index)"
+         [style.background-color]="getHex($index) ? '#' + getHex($index) : undefined"
+         [title]="getHex($index) ? '#' + getHex($index) : 'Empty'"
+         (click)="onLeftClick($index)"
+         (contextmenu)="onRightClick($event, $index)"></div>
+    }
+  </div>
+
+  <button class="clear-btn" (click)="clearHistory()" title="Clear history">🧹</button>
+</div>

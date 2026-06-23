@@ -1,1 +1,28 @@
-<p>settings-panel works!</p>
+<div class="settings-panel">
+  <div class="settings-header">
+    <span>Settings</span>
+    <button class="close-btn" (click)="onClose()">✕</button>
+  </div>
+
+  <div class="settings-body">
+    <div class="setting-row">
+      <label>Auto-copy HEX on click</label>
+      <input type="checkbox" [checked]="settings().autoCopyHex" (change)="onAutoCopyChange($event)" />
+    </div>
+
+    <div class="setting-row">
+      <label>Mouse wheel changes hue</label>
+      <input type="checkbox" [checked]="settings().wheelHueScroll" (change)="onWheelHueChange($event)" />
+    </div>
+
+    <div class="setting-row">
+      <label>UI Scale: {{ settings().uiScale }}%</label>
+      <input type="range"
+             min="80"
+             max="150"
+             step="5"
+             [value]="settings().uiScale"
+             (input)="onScaleChange($event)" />
+    </div>
+  </div>
+</div>
