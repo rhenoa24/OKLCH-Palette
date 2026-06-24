@@ -13,6 +13,7 @@ export class HexInputComponent {
   @ViewChild('hexField') hexField!: ElementRef<HTMLInputElement>;
 
   readonly selectedHex = computed(() => this.state.selectedHex());
+  readonly eyedropperSupported = typeof window !== 'undefined' && 'EyeDropper' in window;
 
   constructor(public state: AppStateService) { }
 
@@ -33,5 +34,18 @@ export class HexInputComponent {
   onFocus(): void {
     // Select all text on focus for easy replacement
     this.hexField?.nativeElement.select();
+  }
+
+  async onEyedropper(): Promise<void> {
+    if (!this.eyedropperSupported) return;
+    try {
+      const EyeDropperAPI = (window as any).EyeDropper;
+      const dropper = new EyeDropperAPI();
+      const result = await dropper.open();
+      const hex = result.sRGBHex.replace('#', '');
+      this.state.setBaseFromHex(hex);
+    } catch {
+      // User cancelled (Esc) — do nothing
+    }
   }
 }

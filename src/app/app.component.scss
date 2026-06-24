@@ -39,6 +39,33 @@
 // ── Toolbar ─────────────────────────────────────────────────
 .app-toolbar {
   display: flex;
+  justify-content: space-between;
+}
+
+.grayscale-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 2px;
+  line-height: 1;
+
+  &:hover {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+
+  &.active {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+}
+
+// ── Grayscale filter ─────────────────────────────────────────
+.grayscale {
+  filter: grayscale(1);
 }
 
 // ── Controls row: swatches + hex ────────────────────────────

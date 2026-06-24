@@ -1,8 +1,14 @@
-<div class="app-shell" [style.--ui-scale]="uiScale() / 100">
+<div class="app-shell" [style.--ui-scale]="uiScale() / 100" [class.grayscale]="grayscale()">
 
   <!-- ── Top bar: mode selector ───────────────────────────── -->
   <div class="app-toolbar">
     <app-mode-selector />
+    <button class="grayscale-btn"
+            [class.active]="grayscale()"
+            title="Toggle grayscale view"
+            (click)="state.toggleGrayscale()">
+      B&W
+    </button>
   </div>
 
   <!-- ── Swatch row + HEX input ───────────────────────────── -->

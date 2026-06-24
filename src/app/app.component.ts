@@ -35,6 +35,7 @@ export class AppComponent {
   readonly showWheel = computed(() => this.state.showWheel());
   readonly uiScale = computed(() => this.state.settings().uiScale);
   readonly wheelHue = computed(() => this.state.settings().wheelHueScroll);
+  readonly grayscale = computed(() => this.state.grayscale());
   showSettings = signal(false);
 
   constructor(public state: AppStateService) { }

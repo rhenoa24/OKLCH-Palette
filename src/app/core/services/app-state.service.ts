@@ -23,6 +23,7 @@ export class AppStateService {
   readonly range = signal<number>(1);
   readonly locked = signal<boolean>(false);
   readonly showOutOfGamut = signal<boolean>(false);
+  readonly grayscale = signal<boolean>(false);
   readonly settings = signal<AppSettings>(DEFAULT_SETTINGS);
 
   // ─── Derived ─────────────────────────────────────────────────────────────
@@ -58,6 +59,7 @@ export class AppStateService {
   /** Right-click / Alt+click a palette cell → set as new base and regenerate */
   setBaseFromCell(oklch: OklchColor): void {
     if (this.locked()) return;
+    this.historyService.push(this.baseColor());
     this.baseColor.set(oklch);
     this.selectedColor.set(oklch);
     this.hueShift.set(0);
@@ -77,7 +79,7 @@ export class AppStateService {
     const clean = hex.replace('#', '').trim();
     if (!/^[0-9a-fA-F]{6}$/.test(clean)) return;
     const oklch = this.colorService.hexToOklch(clean);
-    this.historyService.push(this.baseColor());
+    this.historyService.push(oklch); 
     this.baseColor.set(oklch);
     this.selectedColor.set(oklch);
     this.hueShift.set(0);
@@ -131,6 +133,10 @@ export class AppStateService {
 
   toggleOutOfGamut(): void {
     this.showOutOfGamut.update(v => !v);
+  }
+
+  toggleGrayscale(): void {
+    this.grayscale.update(v => !v);
   }
 
   private copyToClipboard(hex: string): void {
