@@ -43,23 +43,31 @@
 }
 
 .grayscale-btn {
-  background: transparent;
+  min-width: 28px;
+  height: 24px;
+  padding-inline: 10px;
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-ui);
   cursor: pointer;
-  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 2px;
-  line-height: 1;
+  transition: background 0.1s, color 0.1s;
 
   &:hover {
+    background: var(--color-surface-3);
     color: var(--color-text);
-    border-color: var(--color-text-muted);
   }
 
   &.active {
+    background: var(--color-accent);
+    color: #fff;
     border-color: var(--color-accent);
-    color: var(--color-text);
   }
 }
 
