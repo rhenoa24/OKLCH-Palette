@@ -20,11 +20,17 @@ export class AppStateService {
   readonly paletteMode = signal<PaletteMode>('M');
   readonly wheelMode = signal<WheelMode>('none');
   readonly hueShift = signal<number>(0);
-  readonly range = signal<number>(1);
   readonly locked = signal<boolean>(false);
   readonly showOutOfGamut = signal<boolean>(false);
   readonly grayscale = signal<boolean>(false);
   readonly settings = signal<AppSettings>(DEFAULT_SETTINGS);
+
+  // Per-mode range memory — each mode remembers its own range independently
+  private readonly rangePerMode = signal<Record<PaletteMode, number>>({
+    M: 1, V: 1, T: 1, B: 1,
+  });
+
+  readonly range = computed(() => this.rangePerMode()[this.paletteMode()]);
 
   // ─── Derived ─────────────────────────────────────────────────────────────
   readonly baseHex = computed(() => this.colorService.oklchToHex(this.baseColor()));
@@ -103,7 +109,9 @@ export class AppStateService {
   }
 
   setRange(value: number): void {
-    this.range.set(Math.max(1, Math.min(9, value)));
+    const clamped = Math.max(1, Math.min(9, value));
+    const mode = this.paletteMode();
+    this.rangePerMode.update(map => ({ ...map, [mode]: clamped }));
   }
 
   setLightness(l: number): void {

@@ -93,17 +93,17 @@ export class ColorService {
     col: number
   ): PaletteCell {
     const center = 4;
-    const spread = this.rangeToSpread(range); // how wide the palette is
+    const spread = this.rangeToSpread(range);
 
-    const dRow = row - center; // negative = top (higher L), positive = bottom (lower L)
-    const dCol = col - center; // negative = left, positive = right
+    const dRow = row - center;
+    const dCol = col - center;
 
     let oklch: OklchColor;
 
     switch (mode) {
       case 'M': oklch = this.computeCellM(base, hueShift, spread, dRow, dCol); break;
       case 'V': oklch = this.computeCellV(base, hueShift, spread, dRow, dCol); break;
-      case 'T': oklch = this.computeCellT(base, hueShift, spread, dRow, dCol); break;
+      case 'T': oklch = this.computeCellT(base, hueShift, range, row, col); break;
       case 'B': oklch = this.computeCellB(base, hueShift, spread, dRow, dCol); break;
     }
 
@@ -150,17 +150,35 @@ export class ColorService {
   }
 
   /**
-   * T — Temperature: cool on left, warm on right.
-   * Hue shifts toward blue (cool) going left, toward orange (warm) going right.
-   * Rows control lightness.
+   * T — Temperature: reverse-engineered from real Color Penguin samples.
+   *
+   * Key findings:
+   * - Rows control L: base sits at row ~2.83 from top (more room below than above)
+   * - Cols control H: right = higher hue (cooler/yellow), left = lower hue (warmer/red)
+   * - lSpan = 1.0374 - 0.1032*(range-1), spread across 8 rows
+   * - hStep per col = 15.955 - 1.6408*(range-1) degrees
+   * - Chroma: T mode uses a FIXED temperature chroma (~0.185), not base.c
+   *   This is why black (c=0) still produces saturated blues and oranges.
+   *   When base has its own chroma, we take the max of the two so the
+   *   base color identity is preserved.
    */
-  private computeCellT(base: OklchColor, hueShift: number, spread: number, dRow: number, dCol: number): OklchColor {
-    const lStep = 0.07 * spread;
-    // Temperature hue offsets: left = +180° toward blue, right = toward orange/red
-    const tempHueShift = dCol * 18 * spread;
-    const l = Math.max(0.05, Math.min(0.99, base.l - dRow * lStep));
-    const h = this.normalizeHue(base.h + hueShift + tempHueShift);
-    return { l, c: base.c, h };
+  private computeCellT(base: OklchColor, hueShift: number, range: number, row: number, col: number): OklchColor {
+    const BASE_ROW = 2.83;
+    const TEMP_CHROMA = 0.185; // fixed temperature chroma independent of base
+
+    const lSpan = 1.0374 - 0.1032 * (range - 1);
+    const lStep = lSpan / 8;
+    const L_top = base.l + BASE_ROW * lStep;
+    const l = Math.max(0, Math.min(1, L_top - row * lStep));
+
+    const hStep = 15.955 - 1.6408 * (range - 1);
+    const h = this.normalizeHue(base.h + hueShift + (col - 4) * hStep);
+
+    // Use the larger of base chroma or the fixed temperature chroma
+    // so the grid always produces visible color even for black/white/gray bases
+    const c = Math.max(base.c, TEMP_CHROMA);
+
+    return { l, c, h };
   }
 
   /**
@@ -178,8 +196,9 @@ export class ColorService {
   // ─── Math Helpers ────────────────────────────────────────────────────────
 
   private rangeToSpread(range: number): number {
-    // Range 1 = wide (spread 1.0), Range 9 = narrow (spread ~0.15)
-    return 1.0 - (range - 1) * (0.85 / 8);
+    // Derived from data: lSpan = 1.0374 - 0.1032*(range-1), normalized to 0-1
+    // At range=1: span≈1.0 (full), at range=9: span≈0.21 (narrow)
+    return 1.0374 - 0.1032 * (range - 1);
   }
 
   normalizeHue(h: number): number {
