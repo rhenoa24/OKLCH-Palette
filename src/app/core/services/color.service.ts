@@ -121,21 +121,34 @@ export class ColorService {
    * M — Match: perceptual lightness matching.
    * Columns shift hue, rows shift lightness. Chroma is preserved.
    */
-  private computeCellM(base: OklchColor, hueShift: number, spread: number, dRow: number, dCol: number): OklchColor {
+  private computeCellM(
+    base: OklchColor,
+    hueShift: number,
+    spread: number,
+    dRow: number,
+    dCol: number
+  ): OklchColor {
+
     const lStep = 0.06 * spread;
-    const hStep = 15 * spread;
-    const cBoost = 0.015; // top 2 rows increase chroma, bottom 2 decrease
+    const hStep = 12 * spread;
 
+    // Perceptual vertical lightness shift
     let l = base.l - dRow * lStep;
-    let c = base.c;
-    let h = base.h + hueShift + dCol * hStep;
 
-    // Top 2 rows: increase chroma; bottom 2: decrease
-    if (dRow <= -3) c = Math.min(0.4, c + Math.abs(dRow + 2) * cBoost);
-    if (dRow >= 3) c = Math.max(0, c - (dRow - 2) * cBoost);
+    // Horizontal hue variation
+    const h = this.normalizeHue(
+      base.h + hueShift + dCol * hStep
+    );
 
-    l = Math.max(0.05, Math.min(0.99, l));
-    return { l, c, h: this.normalizeHue(h) };
+    // Keep chroma stable but slightly reduce at extremes
+    const chromaDrop = Math.abs(dCol) * 0.01;
+    const c = Math.max(0, base.c - chromaDrop);
+
+    return {
+      l: Math.max(0.05, Math.min(0.98, l)),
+      c,
+      h
+    };
   }
 
   /**
@@ -162,21 +175,35 @@ export class ColorService {
    *   When base has its own chroma, we take the max of the two so the
    *   base color identity is preserved.
    */
-  private computeCellT(base: OklchColor, hueShift: number, range: number, row: number, col: number): OklchColor {
+  private computeCellT(
+    base: OklchColor,
+    hueShift: number,
+    range: number,
+    row: number,
+    col: number
+  ): OklchColor {
+
     const BASE_ROW = 2.83;
-    const TEMP_CHROMA = 0.185; // fixed temperature chroma independent of base
 
     const lSpan = 1.0374 - 0.1032 * (range - 1);
     const lStep = lSpan / 8;
+
     const L_top = base.l + BASE_ROW * lStep;
     const l = Math.max(0, Math.min(1, L_top - row * lStep));
 
-    const hStep = 15.955 - 1.6408 * (range - 1);
-    const h = this.normalizeHue(base.h + hueShift + (col - 4) * hStep);
+    const hStep = 14 * (1 - (range - 1) * 0.05);
 
-    // Use the larger of base chroma or the fixed temperature chroma
-    // so the grid always produces visible color even for black/white/gray bases
-    const c = Math.max(base.c, TEMP_CHROMA);
+    // Temperature direction:
+    // left = warm (lower hue), right = cool (higher hue)
+    const h = this.normalizeHue(
+      base.h + hueShift + (col - 4) * hStep
+    );
+
+    // FIX: preserve chroma identity properly
+    const c =
+      base.c < 0.02
+        ? 0.08   // allow visibility for grayscale bases
+        : base.c;
 
     return { l, c, h };
   }
