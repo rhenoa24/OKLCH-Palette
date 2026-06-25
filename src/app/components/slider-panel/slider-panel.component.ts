@@ -10,7 +10,7 @@ import { AppStateService } from '../../core/services/app-state.service';
   styleUrl: './slider-panel.component.scss',
 })
 export class SliderPanelComponent {
-  readonly hueShift = computed(() => this.state.hueShift());
+  readonly hue = computed(() => this.state.baseColor().h);
   readonly range = computed(() => this.state.range());
   readonly lightness = computed(() => this.state.baseColor().l);
   readonly chroma = computed(() => this.state.baseColor().c);
@@ -18,11 +18,7 @@ export class SliderPanelComponent {
   constructor(public state: AppStateService) { }
 
   onHueChange(event: Event): void {
-    this.state.setHueShift(+(event.target as HTMLInputElement).value);
-  }
-
-  onRangeChange(event: Event): void {
-    this.state.setRange(+(event.target as HTMLInputElement).value);
+    this.state.setHue(+(event.target as HTMLInputElement).value);
   }
 
   onLightnessChange(event: Event): void {

@@ -108,6 +108,15 @@ export class AppStateService {
     this.hueShift.set(value);
   }
 
+  setHue(h: number): void {
+    if (this.locked()) return;
+
+    this.baseColor.update(color => ({
+      ...color,
+      h: ((h % 360) + 360) % 360
+    }));
+  }
+
   setRange(value: number): void {
     const clamped = Math.max(1, Math.min(9, value));
     const mode = this.paletteMode();
