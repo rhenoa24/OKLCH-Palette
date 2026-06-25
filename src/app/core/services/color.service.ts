@@ -49,13 +49,11 @@ export class ColorService {
 
   clampToGamut(oklch: OklchColor): OklchColor {
     if (this.isInGamut(oklch)) return { ...oklch };
-    // Binary search on chroma to find the edge of gamut
     let lo = 0;
     let hi = oklch.c;
     for (let i = 0; i < 20; i++) {
       const mid = (lo + hi) / 2;
-      const candidate = { ...oklch, c: mid };
-      if (this.isInGamut(candidate)) lo = mid;
+      if (this.isInGamut({ ...oklch, c: mid })) lo = mid;
       else hi = mid;
     }
     return { ...oklch, c: lo };
@@ -63,24 +61,15 @@ export class ColorService {
 
   // ─── Palette Generation ──────────────────────────────────────────────────
 
-  /**
-   * Generate the 9×9 palette grid.
-   * Returns a flat array of 81 cells, row-major (top-left to bottom-right).
-   * Center cell [4][4] = index 40 = base color.
-   */
   generatePalette(base: OklchColor, mode: PaletteMode, hueShift: number, range: number): PaletteCell[][] {
-    const size = 9;
     const grid: PaletteCell[][] = [];
-
-    for (let row = 0; row < size; row++) {
+    for (let row = 0; row < 9; row++) {
       const rowCells: PaletteCell[] = [];
-      for (let col = 0; col < size; col++) {
-        const cell = this.computeCell(base, mode, hueShift, range, row, col);
-        rowCells.push(cell);
+      for (let col = 0; col < 9; col++) {
+        rowCells.push(this.computeCell(base, mode, hueShift, range, row, col));
       }
       grid.push(rowCells);
     }
-
     return grid;
   }
 
@@ -92,88 +81,87 @@ export class ColorService {
     row: number,
     col: number
   ): PaletteCell {
-    const center = 4;
+    const dRow = row - 4;
+    const dCol = col - 4;
     const spread = this.rangeToSpread(range);
 
-    const dRow = row - center;
-    const dCol = col - center;
-
     let oklch: OklchColor;
-
     switch (mode) {
-      case 'M': oklch = this.computeCellM(base, hueShift, spread, dRow, dCol); break;
-      case 'V': oklch = this.computeCellV(base, hueShift, spread, dRow, dCol); break;
+      case 'M': oklch = this.computeCellM(base, hueShift, range, dCol); break;
+      case 'V': oklch = this.computeCellV(base, hueShift, range, dRow, dCol); break;
       case 'T': oklch = this.computeCellT(base, hueShift, range, row, col); break;
       case 'B': oklch = this.computeCellB(base, hueShift, spread, dRow, dCol); break;
     }
 
-    const clamped = this.clampToGamut(oklch);
-    const outOfGamut = !this.isInGamut(oklch);
-
-    return {
-      hex: this.oklchToHex(clamped),
-      oklch: clamped,
-      outOfGamut,
-    };
+    const clamped = this.clampToGamut(oklch!);
+    const outOfGamut = !this.isInGamut(oklch!);
+    return { hex: this.oklchToHex(clamped), oklch: clamped, outOfGamut };
   }
 
+  // ─── Mode: M — Match ─────────────────────────────────────────────────────
   /**
-   * M — Match: perceptual lightness matching.
-   * Columns shift hue, rows shift lightness. Chroma is preserved.
+   * Match: every cell shares the base's perceptual lightness (L = constant).
+   * Columns sweep hue left/right; rows have NO lightness change.
+   * "Same perceived brightness" — grayscale view should look uniform.
+   *
+   * Formula:
+   *   L = base.l  (identical for all 81 cells)
+   *   C = base.c  (identical for all 81 cells)
+   *   H = base.h + hueShift + dCol * hStep
+   *
+   * hStep(range): wider at range=1, narrower at range=9.
+   * Derived from FC6C98 screenshot at range=2 where span ≈ 136° total:
+   *   hStep(range) = 20 - (range-1) * (20-5)/8  → 20 down to 5 °/col
    */
   private computeCellM(
     base: OklchColor,
     hueShift: number,
-    spread: number,
+    range: number,
+    dCol: number
+  ): OklchColor {
+    const hStep = 20 - (range - 1) * (15 / 8); // °/col, range 1→9 gives 20°→~3.4°
+    const h = this.normalizeHue(base.h + hueShift + dCol * hStep);
+    return { l: base.l, c: base.c, h };
+  }
+
+  // ─── Mode: V — Vivid ─────────────────────────────────────────────────────
+  /**
+   * Vivid: same hue sweep as Match but lightness is nudged toward
+   * the chroma-optimal zone (~0.65) to keep colors saturated.
+   * Rows introduce a subtle L gradient.
+   */
+  private computeCellV(
+    base: OklchColor,
+    hueShift: number,
+    range: number,
     dRow: number,
     dCol: number
   ): OklchColor {
-
-    const lStep = 0.06 * spread;
-    const hStep = 12 * spread;
-
-    // Perceptual vertical lightness shift
-    let l = base.l - dRow * lStep;
-
-    // Horizontal hue variation
-    const h = this.normalizeHue(
-      base.h + hueShift + dCol * hStep
-    );
-
-    // Keep chroma stable but slightly reduce at extremes
-    const chromaDrop = Math.abs(dCol) * 0.01;
-    const c = Math.max(0, base.c - chromaDrop);
-
-    return {
-      l: Math.max(0.05, Math.min(0.98, l)),
-      c,
-      h
-    };
-  }
-
-  /**
-   * V — Vivid: like M but lightness is tweaked to secure stronger chroma.
-   */
-  private computeCellV(base: OklchColor, hueShift: number, spread: number, dRow: number, dCol: number): OklchColor {
-    const cell = this.computeCellM(base, hueShift, spread, dRow, dCol);
-    // Squeeze lightness toward the chroma-optimal zone (~0.65)
+    const hStep = 20 - (range - 1) * (15 / 8);
+    const lStep = 0.04 * this.rangeToSpread(range);
+    const h = this.normalizeHue(base.h + hueShift + dCol * hStep);
+    const lRaw = base.l - dRow * lStep;
+    // Pull lightness toward the chroma-optimal zone
     const optimal = 0.65;
-    const correction = (optimal - cell.l) * 0.18;
-    return { ...cell, l: Math.max(0.05, Math.min(0.99, cell.l + correction)) };
+    const l = Math.max(0.02, Math.min(0.99, lRaw + (optimal - lRaw) * 0.15));
+    return { l, c: base.c, h };
   }
 
+  // ─── Mode: T — Temperature ───────────────────────────────────────────────
   /**
-   * T — Temperature: reverse-engineered from real Color Penguin samples.
+   * Temperature: cool hues on the left, warm hues on the right.
+   * Rows control lightness; columns control hue (temperature).
    *
-   * Key findings:
-   * - Rows control L: base sits at row ~2.83 from top (more room below than above)
-   * - Cols control H: right = higher hue (cooler/yellow), left = lower hue (warmer/red)
-   * - lSpan = 1.0374 - 0.1032*(range-1), spread across 8 rows
-   * - hStep per col = 15.955 - 1.6408*(range-1) degrees
-   * - Chroma: T mode uses a FIXED temperature chroma (~0.185), not base.c
-   *   This is why black (c=0) still produces saturated blues and oranges.
-   *   When base has its own chroma, we take the max of the two so the
-   *   base color identity is preserved.
+   * Reverse-engineered from 9 steps of F56600 sample data:
+   *   lSpan(range) = 1.0374 - 0.1032*(range-1)   → total L spread across 8 rows
+   *   hStep(range) = 15.955 - 1.6408*(range-1)   → degrees per column
+   *
+   * Key correction: base.l sits at row 4 (center), NOT row 2.83.
+   *   The earlier 2.83 reading was an artifact of clamping at the top.
+   *   L_top = base.l + 4 * lStep  (and naturally clamps to 1.0 for bright bases)
+   *
+   * Chroma: T mode always uses max(base.c, TEMP_CHROMA=0.185)
+   *   so gray/black bases still produce a visible temperature gradient.
    */
   private computeCellT(
     base: OklchColor,
@@ -182,49 +170,47 @@ export class ColorService {
     row: number,
     col: number
   ): OklchColor {
-
-    const BASE_ROW = 2.83;
+    const TEMP_CHROMA = 0.185;
 
     const lSpan = 1.0374 - 0.1032 * (range - 1);
     const lStep = lSpan / 8;
-
-    const L_top = base.l + BASE_ROW * lStep;
+    const L_top = base.l + 4 * lStep;           // base.l sits at row 4
     const l = Math.max(0, Math.min(1, L_top - row * lStep));
 
-    const hStep = 14 * (1 - (range - 1) * 0.05);
+    const hStep = 15.955 - 1.6408 * (range - 1);
+    const h = this.normalizeHue(base.h + hueShift + (col - 4) * hStep);
 
-    // Temperature direction:
-    // left = warm (lower hue), right = cool (higher hue)
-    const h = this.normalizeHue(
-      base.h + hueShift + (col - 4) * hStep
-    );
-
-    // FIX: preserve chroma identity properly
-    const c =
-      base.c < 0.02
-        ? 0.08   // allow visibility for grayscale bases
-        : base.c;
+    const c = Math.max(base.c, TEMP_CHROMA);
 
     return { l, c, h };
   }
 
+  // ─── Mode: B — Brightness + Temperature ──────────────────────────────────
   /**
-   * B — Brightness + Temperature: arranges temperature and lightness together.
-   * Experimental — hue and lightness shift diagonally.
+   * Experimental: hue and lightness shift diagonally.
+   * No reference data — approximate until we have pro version samples.
    */
-  private computeCellB(base: OklchColor, hueShift: number, spread: number, dRow: number, dCol: number): OklchColor {
+  private computeCellB(
+    base: OklchColor,
+    hueShift: number,
+    spread: number,
+    dRow: number,
+    dCol: number
+  ): OklchColor {
     const lStep = 0.055 * spread;
     const hStep = 12 * spread;
-    const l = Math.max(0.05, Math.min(0.99, base.l - (dRow - dCol) * lStep * 0.5));
+    const l = Math.max(0.02, Math.min(0.99, base.l - (dRow - dCol) * lStep * 0.5));
     const h = this.normalizeHue(base.h + hueShift + dCol * hStep - dRow * hStep * 0.4);
     return { l, c: base.c, h };
   }
 
-  // ─── Math Helpers ────────────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
+  /**
+   * Convert range 1–9 to a spread multiplier.
+   * Used by M, V, B modes (T uses range directly in its own formula).
+   */
   private rangeToSpread(range: number): number {
-    // Derived from data: lSpan = 1.0374 - 0.1032*(range-1), normalized to 0-1
-    // At range=1: span≈1.0 (full), at range=9: span≈0.21 (narrow)
     return 1.0374 - 0.1032 * (range - 1);
   }
 
@@ -253,11 +239,7 @@ export class ColorService {
     const l_ = oklab.L + 0.3963377774 * oklab.a + 0.2158037573 * oklab.b;
     const m_ = oklab.L - 0.1055613458 * oklab.a - 0.0638541728 * oklab.b;
     const s_ = oklab.L - 0.0894841775 * oklab.a - 1.2914855480 * oklab.b;
-
-    const l = l_ ** 3;
-    const m = m_ ** 3;
-    const s = s_ ** 3;
-
+    const l = l_ ** 3, m = m_ ** 3, s = s_ ** 3;
     return {
       r: 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
       g: -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
@@ -269,11 +251,7 @@ export class ColorService {
     const l = 0.4122214708 * rgb.r + 0.5363325363 * rgb.g + 0.0514459929 * rgb.b;
     const m = 0.2119034982 * rgb.r + 0.6806995451 * rgb.g + 0.1073969566 * rgb.b;
     const s = 0.0883024619 * rgb.r + 0.2817188376 * rgb.g + 0.6299787005 * rgb.b;
-
-    const l_ = Math.cbrt(l);
-    const m_ = Math.cbrt(m);
-    const s_ = Math.cbrt(s);
-
+    const l_ = Math.cbrt(l), m_ = Math.cbrt(m), s_ = Math.cbrt(s);
     return {
       L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
       a: 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
@@ -283,8 +261,8 @@ export class ColorService {
 
   private linearRgbToSrgb(linear: { r: number; g: number; b: number }): RgbColor {
     const toSrgb = (v: number) => {
-      const clamped = Math.max(0, Math.min(1, v));
-      return (clamped <= 0.0031308 ? 12.92 * clamped : 1.055 * Math.pow(clamped, 1 / 2.4) - 0.055) * 255;
+      const c = Math.max(0, Math.min(1, v));
+      return (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055) * 255;
     };
     return { r: toSrgb(linear.r), g: toSrgb(linear.g), b: toSrgb(linear.b) };
   }
