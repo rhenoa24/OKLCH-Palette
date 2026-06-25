@@ -31,7 +31,12 @@ export class PaletteGridComponent {
   }
 
   isCenter(row: number, col: number): boolean {
-    return row === 4 && col === 4;
+    const palette = this.palette();
+
+    const centerRow = Math.floor(palette.length / 2);
+    const centerCol = Math.floor(palette[0].length / 2);
+
+    return row === centerRow && col === centerCol;
   }
 
   trackByIndex(index: number): number {

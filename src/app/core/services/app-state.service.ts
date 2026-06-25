@@ -150,4 +150,19 @@ export class AppStateService {
   private copyToClipboard(hex: string): void {
     navigator.clipboard.writeText(hex).catch(() => { });
   }
+
+  // ─── Center Cell ─────────────────────────────────────────────────────────────
+  readonly centerCell = computed(() => {
+    const palette = this.palette();
+
+    if (!palette.length) {
+      return null;
+    }
+
+    return palette[4]?.[4] ?? null;
+  });
+
+  readonly centerHex = computed(() => {
+    return this.centerCell()?.hex ?? this.baseHex();
+  });
 }
