@@ -2,7 +2,7 @@
    <!--Left swatch: base color + lock indicator--> 
   <div class="swatch swatch--base"
        [class.locked]="locked()"
-       [style.background-color]="'#' + centerHex()"
+       [style.background-color]="'#' + baseHex()"
        [title]="locked() ? 'Locked — double-click to unlock' : 'Double-click to lock'"
        (dblclick)="onBaseDblClick()">
     <span class="lock-icon">{{ locked() ? '🔒' : '○' }}</span>
