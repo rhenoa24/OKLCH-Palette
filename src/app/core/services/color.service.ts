@@ -90,7 +90,7 @@ export class ColorService {
       case 'M': oklch = this.computeCellM(base, hueShift, range, dCol, row); break;
       case 'V': oklch = this.computeCellV(base, hueShift, range, dRow, dCol); break;
       case 'T': oklch = this.computeCellT(base, hueShift, range, row, col); break;
-      case 'B': oklch = this.computeCellB(base, hueShift, spread, dRow, dCol); break;
+      case 'B': oklch = this.computeCellB(base, hueShift, range, dCol, row); break;
     }
 
     const clamped = this.clampToGamut(oklch!);
@@ -199,12 +199,11 @@ export class ColorService {
 
     // Warm = boost R, reduce B | Cool = boost B, reduce R
     const rScale = 1 + dCol * wbStrength ;
-    const gScale = 1 + dCol * wbStrength * 0; // green barely shifts (realistic WB)
     const bScale = 1 - dCol * wbStrength;
 
     const wbRgb: RgbColor = {
       r: Math.max(0, Math.min(255, neutralRgb.r * rScale)),
-      g: Math.max(0, Math.min(255, neutralRgb.g * gScale)),
+      g: Math.max(0, Math.min(255, neutralRgb.g)), // green barely shifts (realistic WB)
       b: Math.max(0, Math.min(255, neutralRgb.b * bScale)),
     };
 
@@ -229,15 +228,46 @@ export class ColorService {
   private computeCellB(
     base: OklchColor,
     hueShift: number,
-    spread: number,
-    dRow: number,
-    dCol: number
+    range: number,
+    dCol: number,
+    row: number
   ): OklchColor {
-    const lStep = 0.055 * spread;
-    const hStep = 12 * spread;
-    const l = Math.max(0.02, Math.min(0.99, base.l - (dRow - dCol) * lStep * 0.5));
-    const h = this.normalizeHue(base.h + hueShift + dCol * hStep - dRow * hStep * 0.4);
-    return { l, c: base.c, h };
+    const hStep = 25 - (range - 1) * (15 / 6);
+    const h = this.normalizeHue(base.h + hueShift + dCol * hStep);
+
+    // Chroma ramp
+    let c = base.c;
+    if (row === 5) c = base.c * 0.95;
+    else if (row === 6) c = base.c * 0.9;
+    else if (row === 7) c = base.c * 0.85;
+    else if (row === 8) c = base.c * 0.8;
+
+    // ── 1. Convert to RGB at computed hue/chroma ─────────────────────────
+    const neutralRgb = this.oklchToRgb({ l: base.l, c, h });
+
+    // ── 2. White balance shift (same as T mode) ───────────────────────────
+    const wbStrength = 0.04 * (5 - range);
+    const rScale = 1 + dCol * wbStrength;
+    const bScale = 1 - dCol * wbStrength;
+
+    const wbRgb: RgbColor = {
+      r: Math.max(0, Math.min(255, neutralRgb.r * rScale)),
+      g: Math.max(0, Math.min(255, neutralRgb.g)),
+      b: Math.max(0, Math.min(255, neutralRgb.b * bScale)),
+    };
+
+    // ── 3. Brightness boost/cut for top/bottom 3 rows ────────────────────
+    const brightnessBoost = row <= 3 ? (4 - row) * (80 / 4)
+      : row >= 5 ? (row - 4) * (-80 / 4)
+        : 0;
+    const finalRgb: RgbColor = {
+      r: Math.round(Math.max(0, Math.min(255, wbRgb.r + brightnessBoost))),
+      g: Math.round(Math.max(0, Math.min(255, wbRgb.g + brightnessBoost))),
+      b: Math.round(Math.max(0, Math.min(255, wbRgb.b + brightnessBoost))),
+    };
+
+    // ── 4. Convert back to OKLCH ─────────────────────────────────────────
+    return this.rgbToOklch(finalRgb);
   }
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
