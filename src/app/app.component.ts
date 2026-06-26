@@ -44,11 +44,11 @@ export class AppComponent {
     this.showSettings.update(v => !v);
   }
 
-  @HostListener('wheel', ['$event'])
-  onMouseWheel(event: WheelEvent): void {
-    if (!this.wheelHue()) return;
-    // Shift hue on scroll
-    const delta = event.deltaY > 0 ? 5 : -5;
-    this.state.setHueShift(this.state.hueShift() + delta);
-  }
+  //@HostListener('wheel', ['$event'])
+  //onMouseWheel(event: WheelEvent): void {
+  //  if (!this.wheelHue()) return;
+  //  // Shift hue on scroll
+  //  const delta = event.deltaY > 0 ? 5 : -5;
+  //  this.state.setHueShift(this.state.hueShift() + delta);
+  //}
 }
