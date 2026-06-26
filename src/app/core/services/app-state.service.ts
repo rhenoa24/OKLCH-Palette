@@ -15,8 +15,8 @@ const DEFAULT_SETTINGS: AppSettings = {
 export class AppStateService {
 
   // ─── Core signals ────────────────────────────────────────────────────────
-  readonly baseColor = signal<OklchColor>({ l: 0.75, c: 0.12, h: 220 });
-  readonly selectedColor = signal<OklchColor>({ l: 0.75, c: 0.12, h: 220 });
+  readonly baseColor = signal<OklchColor>({ l: 0.74, c: 0.19, h: 311 });
+  readonly selectedColor = signal<OklchColor>({ l: 0.74, c: 0.19, h: 311 });
   readonly paletteMode = signal<PaletteMode>('M');
   readonly wheelMode = signal<WheelMode>('none');
   readonly hueShift = signal<number>(0);

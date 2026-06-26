@@ -87,7 +87,7 @@ export class ColorService {
 
     let oklch: OklchColor;
     switch (mode) {
-      case 'M': oklch = this.computeCellM(base, hueShift, range, dCol); break;
+      case 'M': oklch = this.computeCellM(base, hueShift, range, dCol, row); break;
       case 'V': oklch = this.computeCellV(base, hueShift, range, dRow, dCol); break;
       case 'T': oklch = this.computeCellT(base, hueShift, range, row, col); break;
       case 'B': oklch = this.computeCellB(base, hueShift, spread, dRow, dCol); break;
@@ -101,27 +101,38 @@ export class ColorService {
   // ─── Mode: M — Match ─────────────────────────────────────────────────────
   /**
    * Match: every cell shares the base's perceptual lightness (L = constant).
-   * Columns sweep hue left/right; rows have NO lightness change.
+   * Columns sweep hue left/right; rows gently reduce chroma toward the bottom.
    * "Same perceived brightness" — grayscale view should look uniform.
    *
    * Formula:
    *   L = base.l  (identical for all 81 cells)
-   *   C = base.c  (identical for all 81 cells)
+   *   C = base.c * chromaMult  (flat rows 0–4, stepping down rows 5–8)
    *   H = base.h + hueShift + dCol * hStep
    *
    * hStep(range): wider at range=1, narrower at range=9.
-   * Derived from FC6C98 screenshot at range=2 where span ≈ 136° total:
-   *   hStep(range) = 20 - (range-1) * (20-5)/8  → 20 down to 5 °/col
+   *   hStep(range) = 25 - (range-1) * (15/6)  → 25 down to ~2.5 °/col
+   *
+   * Chroma multipliers (rows 0–4 = 1.0, then):
+   *   row 5 → ×0.95 | row 6 → ×0.90 | row 7 → ×0.85 | row 8 → ×0.80
    */
   private computeCellM(
     base: OklchColor,
     hueShift: number,
     range: number,
-    dCol: number
+    dCol: number,
+    row: number   
   ): OklchColor {
-    const hStep = 20 - (range - 1) * (15 / 8); // °/col, range 1→9 gives 20°→~3.4°
+    const hStep = 25 - (range - 1) * (15 / 6);
     const h = this.normalizeHue(base.h + hueShift + dCol * hStep);
-    return { l: base.l, c: base.c, h };
+
+    // Chroma ramp: top 2 rows boost, bottom 2 rows cut, middle 5 rows flat
+    let c = base.c;
+    if (row === 5) c = base.c * 0.95;
+    else if (row === 6) c = base.c * 0.9;
+    else if (row === 7) c = base.c * 0.85;
+    else if (row === 8) c = base.c * 0.8;
+
+    return { l: base.l, c, h };
   }
 
   // ─── Mode: V — Vivid ─────────────────────────────────────────────────────
