@@ -182,7 +182,7 @@ export class ColorService {
     col: number
   ): OklchColor {
     // ── 1. Lightness: rows go bright (top) → dark (bottom) ──────────────
-    const lSpan = 1.0374 - 0.1032 * (range - 1);
+    const lSpan = 1 - 0.105 * (range - 1);
     const lStep = lSpan / 8;
     const L_top = base.l + 4 * lStep;
     const l = Math.max(0.02, Math.min(0.99, L_top - row * lStep));
