@@ -185,14 +185,15 @@ export class ColorService {
 
     const lSpan = 1.0374 - 0.1032 * (range - 1);
     const lStep = lSpan / 8;
-    const L_top = base.l + 4 * lStep;           // base.l sits at row 4
+    const L_top = base.l + 4 * lStep;  // ← increase multiplier (e.g. 5 or 6) to push top rows brighter toward white
     const l = Math.max(0, Math.min(1, L_top - row * lStep));
 
-    const hStep = 15.955 - 1.6408 * (range - 1);
-    const h = this.normalizeHue(base.h + hueShift + (col - 4) * hStep);
+    const hStepWarm = 15.955 - 1.6408 * (range - 2); // cols 5–8: increase to reach further into oranges/reds
+    const hStepCool = 15.955 - 1.6408 * (range - 2); // cols 0–3: increase to reach further into blues/purples
+    const dCol = col - 4;
+    const h = this.normalizeHue(base.h + hueShift + dCol * (dCol > 0 ? hStepWarm : hStepCool));
 
     const c = Math.max(base.c, TEMP_CHROMA);
-
     return { l, c, h };
   }
 
