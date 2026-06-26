@@ -4,7 +4,6 @@
     <div class="history-cell"
          [class.empty]="!getHex($index)"
          [style.background-color]="getOklchCss($index)"
-         [title]="getHex($index) ? '#' + getHex($index) : 'Empty'"
          (click)="onLeftClick($index)"
          (contextmenu)="onRightClick($event, $index)"></div>
     }

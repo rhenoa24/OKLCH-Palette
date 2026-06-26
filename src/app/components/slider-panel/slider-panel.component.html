@@ -2,8 +2,8 @@
   <label class="slider-label">L</label>
   <input class="slider slider--lightness"
          type="range"
-         min="0.02"
-         max="0.98"
+         min="0"
+         max="1"
          step="0.01"
          [value]="lightness()"
          (input)="onLightnessChange($event)" />
@@ -16,7 +16,7 @@
          type="range"
          min="0"
          max="0.4"
-         step="0.005"
+         step="0.01"
          [value]="chroma()"
          (input)="onChromaChange($event)" />
   <span class="slider-value">{{ chroma().toFixed(3) }}</span>
