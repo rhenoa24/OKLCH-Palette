@@ -181,20 +181,35 @@ export class ColorService {
     row: number,
     col: number
   ): OklchColor {
-    const TEMP_CHROMA = 0.185;
-
+    // ── 1. Lightness: rows go bright (top) → dark (bottom) ──────────────
     const lSpan = 1.0374 - 0.1032 * (range - 1);
     const lStep = lSpan / 8;
-    const L_top = base.l + 4 * lStep;  // ← increase multiplier (e.g. 5 or 6) to push top rows brighter toward white
-    const l = Math.max(0, Math.min(1, L_top - row * lStep));
+    const L_top = base.l + 4 * lStep;
+    const l = Math.max(0.02, Math.min(0.99, L_top - row * lStep));
 
-    const hStepWarm = 15.955 - 1.6408 * (range - 2); // cols 5–8: increase to reach further into oranges/reds
-    const hStepCool = 15.955 - 1.6408 * (range - 2); // cols 0–3: increase to reach further into blues/purples
-    const dCol = col - 4;
-    const h = this.normalizeHue(base.h + hueShift + dCol * (dCol > 0 ? hStepWarm : hStepCool));
+    // ── 2. Build a neutral OKLCH at this lightness, then → linear RGB ───
+    // Use base chroma/hue as the "neutral" starting point
+    const neutralOklch: OklchColor = { l, c: base.c, h: base.h + hueShift };
+    const neutralRgb = this.oklchToRgb(neutralOklch); // 0–255 sRGB
 
-    const c = Math.max(base.c, TEMP_CHROMA);
-    return { l, c, h };
+    // ── 3. White balance shift in RGB space ──────────────────────────────
+    // col 0 = coldest (blue), col 4 = neutral, col 8 = warmest (orange)
+    const dCol = col - 4; // –4 … +4
+    const wbStrength = 0.04 * (10 - range); // range=1 → strong, range=9 → subtle
+
+    // Warm = boost R, reduce B | Cool = boost B, reduce R
+    const rScale = 1 + dCol * wbStrength;
+    const gScale = 1 + dCol * wbStrength * 0.2; // green barely shifts (realistic WB)
+    const bScale = 1 - dCol * wbStrength;
+
+    const wbRgb: RgbColor = {
+      r: Math.max(0, Math.min(255, neutralRgb.r * rScale)),
+      g: Math.max(0, Math.min(255, neutralRgb.g * gScale)),
+      b: Math.max(0, Math.min(255, neutralRgb.b * bScale)),
+    };
+
+    // ── 4. Convert back to OKLCH ─────────────────────────────────────────
+    return this.rgbToOklch(wbRgb);
   }
 
   // ─── Mode: B — Brightness + Temperature ──────────────────────────────────
