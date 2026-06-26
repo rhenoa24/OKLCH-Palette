@@ -30,6 +30,11 @@ export class HistoryRowComponent {
     return color ? this.colorService.oklchToHex(color) : null;
   }
 
+  getOklchCss(index: number): string | null {
+    const color = this.history()[index];
+    return color ? `oklch(${color.l} ${color.c} ${color.h})` : null;
+  }
+
   onLeftClick(index: number): void {
     this.state.restoreFromHistory(index, false);
   }

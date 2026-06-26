@@ -14,6 +14,9 @@ export class SwatchRowComponent {
   readonly selectedHex = computed(() => this.state.selectedHex());
   readonly locked = computed(() => this.state.locked());
 
+  readonly baseOklch = computed(() => this.state.baseOklch());
+  readonly selectedOklch = computed(() => this.state.selectedOklch());
+
   constructor(public state: AppStateService) { }
 
   /** Double-click left swatch → toggle color lock */

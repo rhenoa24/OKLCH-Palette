@@ -36,6 +36,15 @@ export class AppStateService {
   readonly baseHex = computed(() => this.colorService.oklchToHex(this.baseColor()));
   readonly selectedHex = computed(() => this.colorService.oklchToHex(this.selectedColor()));
 
+  readonly baseOklch = computed(() => {
+    const { l, c, h } = this.baseColor();
+    return `oklch(${l} ${c} ${h})`;
+  });
+  readonly selectedOklch = computed(() => {
+    const { l, c, h } = this.selectedColor();
+    return `oklch(${l} ${c} ${h})`;
+  });
+
   readonly palette = computed<PaletteCell[][]>(() =>
     this.colorService.generatePalette(
       this.baseColor(),
@@ -85,7 +94,7 @@ export class AppStateService {
     const clean = hex.replace('#', '').trim();
     if (!/^[0-9a-fA-F]{6}$/.test(clean)) return;
     const oklch = this.colorService.hexToOklch(clean);
-    this.historyService.push(oklch); 
+    this.historyService.push(oklch);
     this.baseColor.set(oklch);
     this.selectedColor.set(oklch);
     this.hueShift.set(0);

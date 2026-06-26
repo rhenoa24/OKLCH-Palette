@@ -5,8 +5,8 @@
     <div class="palette-cell"
          [class.center]="isCenter(rowIdx, colIdx)"
          [class.out-of-gamut]="cell.outOfGamut && state.showOutOfGamut()"
-         [style.background-color]="'#' + cell.hex"
-         [title]="'#' + cell.hex"
+         [style.background-color]="'oklch(' + cell.oklch.l + ' ' + cell.oklch.c + ' ' + cell.oklch.h + ')'"
+         [title]="'oklch(' + cell.oklch.l + ' ' + cell.oklch.c + ' ' + cell.oklch.h + ')'"
          (click)="onLeftClick(cell)"
          (contextmenu)="onRightClick($event, cell)"></div>
     }
