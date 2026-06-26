@@ -36,8 +36,9 @@
   padding: 2px;
   line-height: 1;
   flex-shrink: 0;
+  opacity: 0.7;
 
   &:hover {
-    color: var(--color-text);
+    opacity: 1;
   }
 }
