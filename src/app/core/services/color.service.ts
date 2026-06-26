@@ -185,7 +185,7 @@ export class ColorService {
     const lSpan = 1 - 0.105 * (range - 1);
     const lStep = lSpan / 8;
     const L_top = base.l + 4 * lStep;
-    const l = Math.max(0.02, Math.min(0.99, L_top - row * lStep));
+    const l = Math.max(0, Math.min(1, L_top - row * lStep));
 
     // ── 2. Build a neutral OKLCH at this lightness, then → linear RGB ───
     // Use base chroma/hue as the "neutral" starting point
