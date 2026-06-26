@@ -195,11 +195,11 @@ export class ColorService {
     // ── 3. White balance shift in RGB space ──────────────────────────────
     // col 0 = coldest (blue), col 4 = neutral, col 8 = warmest (orange)
     const dCol = col - 4; // –4 … +4
-    const wbStrength = 0.04 * (10 - range); // range=1 → strong, range=9 → subtle
+    const wbStrength = 0.04 * (5 - range); // range=1 → strong, range=9 → subtle
 
     // Warm = boost R, reduce B | Cool = boost B, reduce R
-    const rScale = 1 + dCol * wbStrength;
-    const gScale = 1 + dCol * wbStrength * 0.2; // green barely shifts (realistic WB)
+    const rScale = 1 + dCol * wbStrength ;
+    const gScale = 1 + dCol * wbStrength * 0; // green barely shifts (realistic WB)
     const bScale = 1 - dCol * wbStrength;
 
     const wbRgb: RgbColor = {
@@ -208,8 +208,17 @@ export class ColorService {
       b: Math.max(0, Math.min(255, neutralRgb.b * bScale)),
     };
 
-    // ── 4. Convert back to OKLCH ─────────────────────────────────────────
-    return this.rgbToOklch(wbRgb);
+    // ── 4. Brighten top 3 rows gradually ─────────────────────────────────
+    // row 0 → +80, row 1 → +53, row 2 → +27, row 3+ → 0
+    const brightnessBoost = row <= 2 ? (3 - row) * (80 / 3) : 0;
+    const finalRgb: RgbColor = {
+      r: Math.round(Math.min(255, wbRgb.r + brightnessBoost)),
+      g: Math.round(Math.min(255, wbRgb.g + brightnessBoost)),
+      b: Math.round(Math.min(255, wbRgb.b + brightnessBoost)),
+    };
+
+    // ── 5. Convert back to OKLCH ─────────────────────────────────────────
+    return this.rgbToOklch(finalRgb);
   }
 
   // ─── Mode: B — Brightness + Temperature ──────────────────────────────────
